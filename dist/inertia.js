@@ -141,8 +141,9 @@ export class Inertia {
             template = await this.vite.transformIndexHtml(this.req.url, template);
         }
         const html = template
-            .replace("<!--ssr-head-->", () => pageObject.ssrHead || "")
-            .replace("<!--ssr-outlet-->", () => pageObject.ssrBody || "");
+            .replace("<!-- @head -->", () => pageObject.ssrHead || "")
+            .replace("<!-- @body -->", () => pageObject.ssrBody || "")
+            .replace(/<!-- Do not remove this comment -->/g, "");
         return html;
     }
     async render(component, pageProps) {
