@@ -204,8 +204,9 @@ export class Inertia {
     }
 
     const html = template
-      .replace("<!--ssr-head-->", () => pageObject.ssrHead || "")
-      .replace("<!--ssr-outlet-->", () => pageObject.ssrBody || "");
+      .replace("<!-- @head -->", () => pageObject.ssrHead || "")
+      .replace("<!-- @body -->", () => pageObject.ssrBody || "")
+      .replace(/<!-- Do not remove this comment -->/g, "");
 
     return html;
   }
