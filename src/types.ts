@@ -13,16 +13,16 @@ export type MaybePromise<T> = T | Promise<T>;
 export type SharedDatumFactory = (ctx: HttpContext) => MaybePromise<Data>;
 export type SharedData = Record<string, Data | SharedDatumFactory>;
 export interface ResolvedConfig<T extends SharedData = SharedData> {
-  sharedData: T;
-  history: { encrypt: boolean };
-  ssr: {
-    enabled: boolean;
+  encryptHistory: boolean;
+  client: {
     entrypoint: string;
-    pages?:
-      | string[]
-      | ((req: Request, res: Response, page: string) => MaybePromise<boolean>);
     bundle: string;
   };
+  ssr: {
+    entrypoint: string;
+    bundle: string;
+  };
+  sharedData: T;
 }
 
 export type PageProps = Record<string, unknown>;

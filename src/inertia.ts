@@ -21,7 +21,7 @@ import fs from "fs/promises";
 import type { Request, Response } from "express";
 import { ViteDevServer } from "vite";
 
-export class InertiaApp {
+export class Inertia {
   private sharedData: SharedData = {};
   private serverRenderer: ServerRenderer;
   private shouldClearHistory = false;
@@ -36,7 +36,7 @@ export class InertiaApp {
     this.sharedData = config.sharedData;
     this.serverRenderer = new ServerRenderer(config, this.vite);
     this.shouldClearHistory = false;
-    this.shouldEncryptHistory = config.history.encrypt;
+    this.shouldEncryptHistory = config.encryptHistory;
   }
 
   private isPartial(component: string) {
@@ -76,7 +76,7 @@ export class InertiaApp {
       );
     }
 
-    const partialOnlyHeader = this.req.header(InertiaHeaders.PartialOnly);
+    const partialOnlyHeader = this.req.get(InertiaHeaders.PartialOnly);
     if (isPartial && partialOnlyHeader) newProps = this.resolveOnly(props);
 
     const partialExceptHeader = this.req.get(InertiaHeaders.PartialExcept);
@@ -103,10 +103,15 @@ export class InertiaApp {
     return [key, value];
   }
 
-  private async resolvePageProps(props: PageProps = {}) {
+  async resolvePageProps(props: PageProps = {}) {
     return Object.fromEntries(
       await Promise.all(
         Object.entries(props).map(async ([key, value]) => {
+          if (typeof value === "function") {
+            const result = await value(this.req, this.res);
+            return this.resolveProp(key, result);
+          }
+
           return this.resolveProp(key, value);
         })
       )
@@ -167,34 +172,18 @@ export class InertiaApp {
     };
   }
 
-  private async shouldRenderOnServer(component: string) {
-    const isSsrEnabled = this.config.ssr.enabled;
-    if (!isSsrEnabled) return false;
-
-    let isSsrEnabledForPage = false;
-    if (typeof this.config.ssr.pages === "function") {
-      isSsrEnabledForPage = await this.config.ssr.pages(
-        this.req,
-        this.res,
-        component
-      );
-    } else if (this.config.ssr.pages) {
-      isSsrEnabledForPage = this.config.ssr.pages?.includes(component);
-    } else {
-      isSsrEnabledForPage = true;
-    }
-
-    return isSsrEnabledForPage;
-  }
-
   private resolveRootView() {
-    return path.resolve("index.html");
+    const index =
+      process.env.NODE_ENV !== "production"
+        ? this.config.client.entrypoint
+        : this.config.client.bundle;
+    return path.resolve(index);
   }
 
   private async renderOnServer(pageObject: PageObject) {
     const { head, body } = await this.serverRenderer.render(pageObject);
 
-    const html = await this.generateHtml(this.resolveRootView(), {
+    const html = await this.generateHtml({
       ssrHead: head,
       ssrBody: body,
       ...pageObject,
@@ -207,8 +196,8 @@ export class InertiaApp {
     this.sharedData = { ...this.sharedData, ...data };
   }
 
-  private async generateHtml(indexFile: string, pageObject: PageObject) {
-    let template = await fs.readFile(indexFile, "utf-8");
+  private async generateHtml(pageObject: PageObject) {
+    let template = await fs.readFile(this.resolveRootView(), "utf-8");
 
     if (this.vite) {
       template = await this.vite.transformIndexHtml(this.req.url, template);
@@ -229,12 +218,7 @@ export class InertiaApp {
     const isInertiaRequest = !!this.req.get(InertiaHeaders.Inertia);
 
     if (!isInertiaRequest) {
-      const shouldRenderOnServer = await this.shouldRenderOnServer(component);
-      if (shouldRenderOnServer) return this.renderOnServer(pageObject);
-
-      const html = this.generateHtml(this.resolveRootView(), pageObject);
-
-      return this.res.send(html);
+      return this.renderOnServer(pageObject);
     }
 
     this.res.setHeader(InertiaHeaders.Inertia, "true");

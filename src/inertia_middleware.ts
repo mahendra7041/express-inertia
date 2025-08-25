@@ -1,10 +1,10 @@
-import { InertiaApp } from "./inertia_app.js";
+import { Inertia } from "./inertia.js";
 import { InertiaHeaders } from "./headers.js";
 import type { ResolvedConfig } from "./types.js";
 import type { NextFunction, Request, Response } from "express";
 import { ViteDevServer } from "vite";
 
-export class Inertia {
+export class InertiaMiddleware {
   constructor(
     protected config: ResolvedConfig,
     protected vite?: ViteDevServer
@@ -39,7 +39,7 @@ export class Inertia {
 
   async handle(req: Request, res: Response, next: NextFunction) {
     try {
-      res.inertia = new InertiaApp(req, res, this.config, this.vite);
+      res.inertia = new Inertia(req, res, this.config, this.vite);
       this.shareErrors(req, res);
       next();
 
