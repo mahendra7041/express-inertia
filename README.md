@@ -5,30 +5,16 @@
 
 A lightweight Express.js adapter for [Inertia.js](https://inertiajs.com/). Build modern, single-page applications with the simplicity of server-side routing and the power of client-side rendering, using React, Vue, or Svelte.
 
----
-
-## Features
-
-- **Seamless Integration**: Simple middleware to connect Inertia.js to your Express server.
-- **SSR Ready**: Full support for Server-Side Rendering with Vite.
-- **Universal Framework Support**: Works effortlessly with React, Vue, and Svelte.
-- **Shared Data**: Easily pass common data to every page using `res.inertia.share()` or global config.
-- **TypeScript Friendly**: Includes type definitions for a better development experience.
-
----
-
 ## Quick Start
 
 The fastest way to get started is to use the official template, which includes a pre-configured setup with Vite, React, and SSR.
 
 ```bash
-npm create vite@latest my-inertia-app -- --template github:/mahendra7041/react-inertia
+npx degit mahendra7041/react-inertia my-inertia-app
 cd my-inertia-app
 npm install
 npm run dev
 ```
-
----
 
 ## Manual Installation
 
@@ -46,28 +32,32 @@ Configure the Inertia middleware and apply it to your Express app.
 
 ```javascript
 import express from "express";
-import inertia from "express-inertia";
-import { inertiaConfig } from "./configs/inertia.config.js";
 import router from "./app/router.js";
+import { inertiaConfig } from "./configs/inertia.config.js";
 
-async function bootstrap() {
-  const app = express();
+const app = express();
+const PORT = process.env.PORT || 5000;
 
-  // Initialize the Inertia middleware
-  const inertiaMiddleware = await inertia(inertiaConfig);
-  app.use(inertiaMiddleware);
+// Serve static files from the "public" folder
+app.use(express.static("public"));
 
-  // Add your application routes
-  app.use(router);
-
-  // Start the server
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () =>
-    console.log(`Server running at http://localhost:${PORT}`)
+// Serve production build files if in production mode
+if (process.env.NODE_ENV === "production") {
+  app.use(
+    express.static("build/client", {
+      index: false,
+    })
   );
 }
 
-bootstrap().catch(console.error);
+// Initialize Inertia middleware
+export const inertiaMiddleware = await inertia(inertiaConfig);
+app.use(inertiaMiddleware);
+
+app.use(router);
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
 ```
 
 ### 2. Configuration (`configs/inertia.config.js`)
@@ -106,38 +96,12 @@ Use the `res.inertia.render()` method to render your Inertia pages and share req
 import { Router } from "express";
 const router = Router();
 
-// Middleware to share data for specific routes
-router.use((req, res, next) => {
-  // Share data with all subsequent requests
-  res.inertia.share({
-    currentUrl: req.originalUrl,
-    isAuthenticated: !!req.user,
-  });
-  next();
-});
-
 router.get("/", (req, res) => {
-  // Share additional data just for this request
-  res.inertia.share({
-    notification: "Welcome back!",
-  });
-
-  res.inertia.render("home", {
-    user: { name: "Mahendra" },
-    title: "Welcome to my App",
-  });
+  res.inertia.render("home");
 });
 
 router.get("/about", (req, res) => {
-  res.inertia.render("about", {
-    framework: "Express + Inertia + React",
-  });
-});
-
-router.get("/user/:id", (req, res) => {
-  res.inertia.render("user/show", {
-    userId: req.params.id,
-  });
+  res.inertia.render("about");
 });
 
 export default router;
@@ -157,7 +121,52 @@ Add these scripts to your `package.json` for development and building.
 }
 ```
 
----
+### Vite Config (`vite.config.js`)
+
+```javascript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+});
+```
+
+### SSR Entry Point (`src/ssr.jsx`)
+
+```javascript
+import ReactDOMServer from "react-dom/server";
+import { createInertiaApp } from "@inertiajs/react";
+
+export default function render(page) {
+  return createInertiaApp({
+    page,
+    render: ReactDOMServer.renderToString,
+    resolve: (name) => {
+      const pages = import.meta.glob("./pages/**/*.jsx", { eager: true });
+      return pages[`./pages/${name}.jsx`];
+    },
+    setup: ({ App, props }) => <App {...props} />,
+  });
+}
+```
+
+### Client Entry Point (`src/main.jsx`)
+
+```javascript
+import { createInertiaApp } from "@inertiajs/react";
+import { createRoot } from "react-dom/client";
+
+createInertiaApp({
+  resolve: (name) => {
+    const pages = import.meta.glob("./pages/**/*.jsx", { eager: true });
+    return pages[`./pages/${name}.jsx`];
+  },
+  setup({ el, App, props }) {
+    createRoot(el).render(<App {...props} />);
+  },
+});
+```
 
 ### Project Structure
 
@@ -181,59 +190,6 @@ my-inertia-app/
 ├── vite.config.js         # Vite configuration
 └── server.js              # Express server entry point
 ```
-
----
-
-### Vite Config (`vite.config.js`)
-
-```javascript
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-
-export default defineConfig({
-  plugins: [react()],
-});
-```
-
-### SSR Entry Point (`src/ssr.jsx`)
-
-```javascript
-import ReactDOMServer from "react-dom/server";
-import { createInertiaApp } from "@inertiajs/react";
-
-export default function render(page) {
-  const { html, head } = createInertiaApp({
-    page,
-    render: ReactDOMServer.renderToString,
-    resolve: (name) => {
-      const pages = import.meta.glob("./pages/**/*.jsx", { eager: true });
-      return pages[`./pages/${name}.jsx`];
-    },
-    setup: ({ App, props }) => <App {...props} />,
-  });
-
-  return { html, head };
-}
-```
-
-### Client Entry Point (`src/main.jsx`)
-
-```javascript
-import { createInertiaApp } from "@inertiajs/react";
-import { createRoot } from "react-dom/client";
-
-createInertiaApp({
-  resolve: (name) => {
-    const pages = import.meta.glob("./pages/**/*.jsx", { eager: true });
-    return pages[`./pages/${name}.jsx`];
-  },
-  setup({ el, App, props }) {
-    createRoot(el).render(<App {...props} />);
-  },
-});
-```
-
----
 
 ## API Reference
 
@@ -265,8 +221,6 @@ Shares data with the current and subsequent requests.
 
 - `data`: Object of data to merge with existing shared properties.
 
----
-
 ## Contributing
 
 1.  Fork the repository
@@ -274,8 +228,6 @@ Shares data with the current and subsequent requests.
 3.  Commit your changes: `git commit -m 'Add amazing feature'`
 4.  Push to the branch: `git push origin feat/amazing-feature`
 5.  Open a Pull Request
-
----
 
 ## License
 
