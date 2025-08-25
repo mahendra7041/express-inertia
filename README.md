@@ -26,7 +26,7 @@ npm install express-inertia express @inertiajs/react react react-dom
 npm install --save-dev vite @vitejs/plugin-react
 ```
 
-### 1. Basic Server Setup (`server.js`)
+### Basic Server Setup (`server.js`)
 
 Configure the Inertia middleware and apply it to your Express app.
 
@@ -60,7 +60,7 @@ app.listen(PORT, () => {
 });
 ```
 
-### 2. Configuration (`configs/inertia.config.js`)
+### Configuration (`configs/inertia.config.js`)
 
 Create a config file to define your client/SSR entry points and global shared data.
 
@@ -88,7 +88,7 @@ export const inertiaConfig = {
 };
 ```
 
-### 3. Define Your Routes (`app/router.js`)
+### Define Your Routes (`app/router.js`)
 
 Use the `res.inertia.render()` method to render your Inertia pages and share request-specific data.
 
@@ -107,7 +107,7 @@ router.get("/about", (req, res) => {
 export default router;
 ```
 
-### 4. Scripts (`package.json`)
+### Scripts (`package.json`)
 
 Add these scripts to your `package.json` for development and building.
 
