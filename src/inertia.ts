@@ -181,7 +181,7 @@ export class Inertia {
   }
 
   private async getTemplate(): Promise<string> {
-    let template = await readFile(path.resolve("index.html"), "utf8");
+    let template = await readFile(this.resolveRootView(), "utf8");
     if (this.vite) {
       template = await this.vite.transformIndexHtml(this.req.url, template);
     }
