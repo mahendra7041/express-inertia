@@ -122,7 +122,7 @@ async function bootstrap() {
   app.use(express.static("public"));
 
   const config = {
-    rootElementId: "app",
+    rootElementId: "root",
     encryptHistory: true,
     client: {
       entrypoint: "index.html",
