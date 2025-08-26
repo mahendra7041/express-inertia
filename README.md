@@ -15,10 +15,17 @@ A lightweight Express.js adapter for [Inertia.js](https://inertiajs.com/) that e
 
 ## Quick Start
 
-The fastest way to get started is using our official template:
+The fastest way to get started is using our official templates:
 
 ```bash
-npx degit mahendra7041/react-inertia my-inertia-app
+# For React
+npx degit mahendra7041/express-inertia/examples/react my-inertia-app
+
+# For Vue
+npx degit mahendra7041/express-inertia/examples/vue my-inertia-app
+
+# For Svelte
+npx degit mahendra7041/express-inertia/examples/svelte my-inertia-app
 
 cd my-inertia-app
 npm install
@@ -95,8 +102,7 @@ import { createServer } from "vite";
 async function bootstrap() {
   const app = express();
   const PORT = process.env.PORT || 5000;
-
-  app.use(express.static("public"));
+  let vite;
 
   if (process.env.NODE_ENV === "production") {
     app.use(
@@ -104,36 +110,34 @@ async function bootstrap() {
         index: false,
       })
     );
+  } else {
+    vite = await createServer({
+      server: { middlewareMode: true },
+      appType: "custom",
+    });
+
+    app.use(vite.middlewares);
   }
 
-  const vite = await createServer({
-    server: { middlewareMode: true },
-    appType: "custom",
-  });
-  app.use(vite.middlewares);
+  app.use(express.static("public"));
 
   const config = {
-    rootElementId: "root",
+    rootElementId: "app",
     encryptHistory: true,
     client: {
       entrypoint: "index.html",
       bundle: "build/client/index.html",
     },
-    // for server side rendering
-    // ssr:{
-    //   entrypoint: "src/ssr.jsx",
-    //   bundle: "build/ssr/ssr.js"
-    // }
+    ssr: {
+      entrypoint: "src/ssr.js",
+      bundle: "build/ssr/ssr.js",
+    },
   };
 
   app.use(inertiaMiddleware(config, vite));
 
   app.get("/", (req, res) => {
     res.inertia.render("home");
-  });
-
-  app.get("/about", (req, res) => {
-    res.inertia.render("about");
   });
 
   app.listen(PORT, () => {
@@ -150,11 +154,10 @@ bootstrap().catch(console.error);
 {
   "scripts": {
     "dev": "nodemon server.js",
+    "serve": "NODE_ENV=production node server.js",
     "build": "npm run build:client && npm run build:ssr",
     "build:client": "vite build --outDir build/client --ssrManifest",
-    "build:ssr": "vite build --outDir build/ssr --ssr src/ssr.jsx",
-    "serve": "NODE_ENV=production node server.js",
-    "preview": "vite preview"
+    "build:ssr": "vite build --outDir build/ssr --ssr src/ssr.jsx"
   }
 }
 ```

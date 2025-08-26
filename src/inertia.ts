@@ -24,8 +24,9 @@ import type { ViteDevServer } from "vite";
 export class Inertia {
   private sharedData: SharedData = {};
   private serverRenderer: ServerRenderer;
-  private shouldClearHistory = false;
-  private shouldEncryptHistory = false;
+  private shouldClearHistory: boolean;
+  private shouldEncryptHistory: boolean;
+  private rootElementId: string;
 
   constructor(
     protected req: Request,
@@ -34,9 +35,10 @@ export class Inertia {
     protected vite?: ViteDevServer
   ) {
     this.sharedData = config.sharedData;
+    this.rootElementId = config.rootElementId || "app";
     this.serverRenderer = new ServerRenderer(config, this.vite);
     this.shouldClearHistory = false;
-    this.shouldEncryptHistory = config.encryptHistory;
+    this.shouldEncryptHistory = config.encryptHistory || true;
   }
 
   private isPartial(component: string) {
@@ -208,9 +210,9 @@ export class Inertia {
       .replace(
         "<!-- @inertia -->",
         () =>
-          `<div id="${
-            this.config.rootElementId
-          }" data-page="${this.encodePageProps(pageObject)}"></div>`
+          `<div id="${this.rootElementId}" data-page="${this.encodePageProps(
+            pageObject
+          )}"></div>`
       );
     return this.res.send(html);
   }
