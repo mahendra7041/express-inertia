@@ -222,6 +222,7 @@ export default function render(page) {
 
 | Option              | Type      | Default      | Description                                     |
 | ------------------- | --------- | ------------ | ----------------------------------------------- |
+| `rootElementId`     | `string`  | `app`        | DOM element ID where the Inertia app mounts     |
 | `encryptHistory`    | `boolean` | `true`       | Encrypts the Inertia history state for security |
 | `client.entrypoint` | `string`  | **Required** | Path to your HTML template                      |
 | `client.bundle`     | `string`  | **Required** | Path to the built client-side bundle            |
