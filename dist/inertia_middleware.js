@@ -1,33 +1,9 @@
 import { Inertia } from "./inertia.js";
 import { InertiaHeaders } from "./headers.js";
-export class InertiaMiddleware {
-    constructor(config, vite) {
-        this.config = config;
-        this.vite = vite;
-    }
-    resolveValidationErrors(req, res) {
-        if (!res.locals.errors) {
-            return {};
-        }
-        if (!res.locals.errors.E_VALIDATION_ERROR) {
-            return res.locals.errors;
-        }
-        const errors = Object.entries(res.locals.errors.inputErrorsBag).reduce((acc, [field, messages]) => {
-            acc[field] = Array.isArray(messages) ? messages[0] : messages;
-            return acc;
-        }, {});
-        const errorBag = req.header(InertiaHeaders.ErrorBag);
-        return errorBag ? { [errorBag]: errors } : errors;
-    }
-    shareErrors(req, res) {
-        res.inertia.share({
-            errors: res.inertia.always(() => this.resolveValidationErrors(req, res)),
-        });
-    }
-    async handle(req, res, next) {
+export function inertiaMiddleware(config, vite) {
+    return async (req, res, next) => {
         try {
-            res.inertia = new Inertia(req, res, this.config, this.vite);
-            this.shareErrors(req, res);
+            res.inertia = new Inertia(req, res, config, vite);
             next();
             const isInertiaRequest = !!req.get(InertiaHeaders.Inertia);
             if (!isInertiaRequest)
@@ -46,10 +22,7 @@ export class InertiaMiddleware {
             }
         }
         catch (error) {
-            if (this.vite) {
-                this.vite.ssrFixStacktrace(error);
-            }
             next(error);
         }
-    }
+    };
 }

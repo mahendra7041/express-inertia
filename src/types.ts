@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import type { VersionCache } from "./version_cache.js";
+import { ServerRenderer } from "./server_renderer.js";
 
 export interface HttpContext {
   request: Request;
@@ -10,7 +11,10 @@ export type AssetsVersion = string | number | undefined;
 
 export type Data = string | number | object | boolean;
 export type MaybePromise<T> = T | Promise<T>;
-export type SharedDatumFactory = (ctx: HttpContext) => MaybePromise<Data>;
+export type SharedDatumFactory = (
+  req: Request,
+  res: Response
+) => MaybePromise<Data>;
 export type SharedData = Record<string, Data | SharedDatumFactory>;
 export interface ResolvedConfig<T extends SharedData = SharedData> {
   encryptHistory: boolean;

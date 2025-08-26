@@ -17,9 +17,9 @@ import {
 } from "./props.js";
 import { InertiaHeaders } from "./headers.js";
 import path from "path";
-import fs from "fs/promises";
+import fs, { readFile } from "fs/promises";
 import type { Request, Response } from "express";
-import { ViteDevServer } from "vite";
+import type { ViteDevServer } from "vite";
 
 export class Inertia {
   private sharedData: SharedData = {};
@@ -180,34 +180,45 @@ export class Inertia {
     return path.resolve(index);
   }
 
+  private async getTemplate(): Promise<string> {
+    let template = await readFile(path.resolve("index.html"), "utf8");
+    if (this.vite) {
+      template = await this.vite.transformIndexHtml(this.req.url, template);
+    }
+    return template;
+  }
+
   private async renderOnServer(pageObject: PageObject) {
     const { head, body } = await this.serverRenderer.render(pageObject);
 
-    const html = await this.generateHtml({
-      ssrHead: head,
-      ssrBody: body,
-      ...pageObject,
-    });
+    const template = await this.getTemplate();
+
+    const html = template
+      .replace("<!-- @inertiaHead -->", () => head || "")
+      .replace("<!-- @inertia -->", () => body || "");
 
     return this.res.send(html);
   }
 
-  share(data: Record<string, Data>) {
-    this.sharedData = { ...this.sharedData, ...data };
-  }
-
-  private async generateHtml(pageObject: PageObject) {
-    let template = await fs.readFile(this.resolveRootView(), "utf-8");
-
-    if (this.vite) {
-      template = await this.vite.transformIndexHtml(this.req.url, template);
-    }
+  private async renderOnClient(pageObject: PageObject) {
+    const template = await this.getTemplate();
 
     const html = template
-      .replace("<!-- @head -->", () => pageObject.ssrHead || "")
-      .replace("<!-- @body -->", () => pageObject.ssrBody || "");
+      .replace("<!-- @inertiaHead -->", () => "")
+      .replace(
+        "<!-- @inertia -->",
+        () =>
+          `<div id="app" data-page="${this.encodePageProps(pageObject)}"></div>`
+      );
+    return this.res.send(html);
+  }
 
-    return html;
+  private encodePageProps(data: Record<any, any>) {
+    return JSON.stringify(data).replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
+  share(data: Record<string, Data>) {
+    this.sharedData = { ...this.sharedData, ...data };
   }
 
   async render<TPageProps extends Record<string, any> = {}>(
@@ -218,7 +229,9 @@ export class Inertia {
     const isInertiaRequest = !!this.req.get(InertiaHeaders.Inertia);
 
     if (!isInertiaRequest) {
-      return this.renderOnServer(pageObject);
+      if (this.config.ssr) return this.renderOnServer(pageObject);
+
+      return this.renderOnClient(pageObject);
     }
 
     this.res.setHeader(InertiaHeaders.Inertia, "true");

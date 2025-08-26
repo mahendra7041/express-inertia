@@ -1,7 +1,7 @@
 import type { Data, MaybePromise, PageProps, ResolvedConfig } from "./types.js";
 import { AlwaysProp, DeferProp, MergeProp, OptionalProp } from "./props.js";
 import type { Request, Response } from "express";
-import { ViteDevServer } from "vite";
+import type { ViteDevServer } from "vite";
 export declare class Inertia {
     protected req: Request;
     protected res: Response;
@@ -22,9 +22,11 @@ export declare class Inertia {
     private resolveMergeProps;
     private buildPageObject;
     private resolveRootView;
+    private getTemplate;
     private renderOnServer;
+    private renderOnClient;
+    private encodePageProps;
     share(data: Record<string, Data>): void;
-    private generateHtml;
     render<TPageProps extends Record<string, any> = {}>(component: string, pageProps?: TPageProps): Promise<any>;
     clearHistory(): void;
     encryptHistory(encrypt?: boolean): void;

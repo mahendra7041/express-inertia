@@ -2,45 +2,15 @@ import { Inertia } from "./inertia.js";
 import { InertiaHeaders } from "./headers.js";
 import type { ResolvedConfig } from "./types.js";
 import type { NextFunction, Request, Response } from "express";
-import { ViteDevServer } from "vite";
+import type { ViteDevServer } from "vite";
 
-export class InertiaMiddleware {
-  constructor(
-    protected config: ResolvedConfig,
-    protected vite?: ViteDevServer
-  ) {}
-
-  private resolveValidationErrors(req: Request, res: Response) {
-    if (!res.locals.errors) {
-      return {};
-    }
-
-    if (!res.locals.errors.E_VALIDATION_ERROR) {
-      return res.locals.errors;
-    }
-
-    const errors = Object.entries(res.locals.errors.inputErrorsBag).reduce(
-      (acc, [field, messages]) => {
-        acc[field] = Array.isArray(messages) ? messages[0] : messages;
-        return acc;
-      },
-      {} as Record<string, string>
-    );
-
-    const errorBag = req.header(InertiaHeaders.ErrorBag);
-    return errorBag ? { [errorBag]: errors } : errors;
-  }
-
-  private shareErrors(req: Request, res: Response) {
-    res.inertia.share({
-      errors: res.inertia.always(() => this.resolveValidationErrors(req, res)),
-    });
-  }
-
-  async handle(req: Request, res: Response, next: NextFunction) {
+export function inertiaMiddleware(
+  config: ResolvedConfig,
+  vite?: ViteDevServer
+) {
+  return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.inertia = new Inertia(req, res, this.config, this.vite);
-      this.shareErrors(req, res);
+      res.inertia = new Inertia(req, res, config, vite);
       next();
 
       const isInertiaRequest = !!req.get(InertiaHeaders.Inertia);
@@ -63,10 +33,7 @@ export class InertiaMiddleware {
         res.status(409);
       }
     } catch (error: any) {
-      if (this.vite) {
-        this.vite.ssrFixStacktrace(error);
-      }
       next(error);
     }
-  }
+  };
 }
