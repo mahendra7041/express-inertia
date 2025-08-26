@@ -53,7 +53,7 @@ cd my-inertia-app
 Install the necessary dependencies for Express and Inertia:
 
 ```bash
-# For React
+# For React (used in this guide)
 npm install express-inertia express @inertiajs/react
 
 # For Vue
