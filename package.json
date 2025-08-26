@@ -15,8 +15,6 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@adonisjs/vite": "^4.0.0",
-    "express": "^5.1.0",
-    "express-session": "^1.18.2"
+    "express": "^5.1.0"
   }
 }
