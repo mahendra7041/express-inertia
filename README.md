@@ -113,6 +113,7 @@ async function bootstrap() {
   app.use(vite.middlewares);
 
   const config = {
+    rootElementId: "root",
     encryptHistory: true,
     client: {
       entrypoint: "index.html",
@@ -167,6 +168,7 @@ import { createInertiaApp } from "@inertiajs/react";
 import { createRoot } from "react-dom/client";
 
 createInertiaApp({
+  id: "root",
   resolve: (name) => {
     const pages = import.meta.glob("./pages/**/*.jsx", { eager: true });
     const page = pages[`./pages/${name}.jsx`];
@@ -193,6 +195,7 @@ import { createInertiaApp } from "@inertiajs/react";
 
 export default function render(page) {
   return createInertiaApp({
+    id: "root",
     page,
     render: ReactDOMServer.renderToString,
     resolve: (name) => {

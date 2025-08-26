@@ -208,7 +208,9 @@ export class Inertia {
       .replace(
         "<!-- @inertia -->",
         () =>
-          `<div id="app" data-page="${this.encodePageProps(pageObject)}"></div>`
+          `<div id="${
+            this.config.rootElementId
+          }" data-page="${this.encodePageProps(pageObject)}"></div>`
       );
     return this.res.send(html);
   }

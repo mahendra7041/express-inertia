@@ -17,6 +17,7 @@ export type SharedDatumFactory = (
 ) => MaybePromise<Data>;
 export type SharedData = Record<string, Data | SharedDatumFactory>;
 export interface ResolvedConfig<T extends SharedData = SharedData> {
+  rootElementId: string;
   encryptHistory: boolean;
   client: {
     entrypoint: string;
