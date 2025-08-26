@@ -7,8 +7,6 @@ async function bootstrap() {
   const PORT = process.env.PORT || 5000;
   let vite;
 
-  app.use(express.static("public"));
-
   if (process.env.NODE_ENV === "production") {
     app.use(
       express.static("build/client", {
@@ -23,6 +21,8 @@ async function bootstrap() {
 
     app.use(vite.middlewares);
   }
+
+  app.use(express.static("public"));
 
   const config = {
     rootElementId: "root",
