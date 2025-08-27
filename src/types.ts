@@ -1,7 +1,5 @@
 import type { Request, Response } from "express";
-import type { VersionCache } from "./version_cache.js";
-import { ServerRenderer } from "./server_renderer.js";
-
+import { InlineConfig, ResolvedConfig as ViteResolveConfig } from "vite";
 export interface HttpContext {
   request: Request;
   response: Response;
@@ -16,19 +14,28 @@ export type SharedDatumFactory = (
   res: Response
 ) => MaybePromise<Data>;
 export type SharedData = Record<string, Data | SharedDatumFactory>;
-export interface ResolvedConfig<T extends SharedData = SharedData> {
+export interface BaseConfig {
   rootElementId?: string;
   encryptHistory?: boolean;
-  client: {
-    entrypoint: string;
-    bundle: string;
-  };
-  ssr: {
-    entrypoint: string;
-    bundle: string;
-  };
-  sharedData: T;
+  clientStaticBuildDir?: string;
+  indexEntrypoint?: string;
+  indexBuildEntrypoint?: string;
+  vite?: InlineConfig | ViteResolveConfig;
 }
+
+interface ConfigWithoutSSR extends BaseConfig {
+  ssrEnabled: false;
+  ssrEntrypoint?: never;
+  ssrBuildEntrypoint?: never;
+}
+
+interface ConfigWithSSR extends BaseConfig {
+  ssrEnabled: true;
+  ssrEntrypoint: string;
+  ssrBuildEntrypoint: string;
+}
+
+export type ResolvedConfig = ConfigWithoutSSR | ConfigWithSSR;
 
 export type PageProps = Record<string, unknown>;
 
@@ -57,17 +64,6 @@ export type SetAttributesCallbackParams = {
 export type SetAttributes =
   | Record<string, string | boolean>
   | ((params: SetAttributesCallbackParams) => Record<string, string | boolean>);
-
-export type AdonisViteElement =
-  | {
-      tag: "link";
-      attributes: Record<string, any>;
-    }
-  | {
-      tag: "script";
-      attributes: Record<string, any>;
-      children: string[];
-    };
 
 export interface ViteOptions {
   buildDirectory: string;

@@ -16,9 +16,11 @@ export class ServerRenderer {
     let render: any;
 
     if (this.vite) {
-      render = await this.vite.ssrLoadModule(this.config.ssr.entrypoint!);
+      render = await this.vite.ssrLoadModule(this.config.ssrEntrypoint!);
     } else {
-      render = await import(pathToFileURL(this.config.ssr.bundle).href);
+      render = await import(
+        pathToFileURL(this.config.ssrBuildEntrypoint!).href
+      );
     }
 
     const result = await render.default(pageObject);

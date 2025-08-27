@@ -1,5 +1,6 @@
 import { ServerRenderer } from "./server_renderer.js";
 import type {
+  BaseConfig,
   Data,
   MaybePromise,
   PageObject,
@@ -17,7 +18,7 @@ import {
 } from "./props.js";
 import { InertiaHeaders } from "./headers.js";
 import path from "path";
-import fs, { readFile } from "fs/promises";
+import { readFile } from "fs/promises";
 import type { Request, Response } from "express";
 import type { ViteDevServer } from "vite";
 
@@ -31,14 +32,22 @@ export class Inertia {
   constructor(
     protected req: Request,
     protected res: Response,
-    protected config: ResolvedConfig,
+    protected config: ResolvedConfig & Required<BaseConfig>,
     protected vite?: ViteDevServer
   ) {
-    this.sharedData = config.sharedData;
     this.rootElementId = config.rootElementId || "app";
     this.serverRenderer = new ServerRenderer(config, this.vite);
     this.shouldClearHistory = false;
     this.shouldEncryptHistory = config.encryptHistory || true;
+    this.sharedData = {
+      errors: (req: Request) => req.flash.get("errors") || {},
+      flash: (req: Request) => {
+        return {
+          error: req.flash.get("error") || null,
+          success: req.flash.get("success") || null,
+        };
+      },
+    };
   }
 
   private isPartial(component: string) {
@@ -177,8 +186,8 @@ export class Inertia {
   private resolveRootView() {
     const index =
       process.env.NODE_ENV !== "production"
-        ? this.config.client.entrypoint
-        : this.config.client.bundle;
+        ? this.config.indexEntrypoint
+        : this.config.indexBuildEntrypoint;
     return path.resolve(index);
   }
 
@@ -225,6 +234,17 @@ export class Inertia {
     this.sharedData = { ...this.sharedData, ...data };
   }
 
+  private isValidVersion() {
+    const version = "1";
+    if (
+      this.req.method === "GET" &&
+      this.req.get(InertiaHeaders.Version) !== version
+    ) {
+      return false;
+    }
+    return true;
+  }
+
   async render<TPageProps extends Record<string, any> = {}>(
     component: string,
     pageProps?: TPageProps
@@ -233,9 +253,15 @@ export class Inertia {
     const isInertiaRequest = !!this.req.get(InertiaHeaders.Inertia);
 
     if (!isInertiaRequest) {
-      if (this.config.ssr) return this.renderOnServer(pageObject);
+      if (this.config.ssrEnabled) return this.renderOnServer(pageObject);
 
       return this.renderOnClient(pageObject);
+    }
+
+    this.res.setHeader("Vary", InertiaHeaders.Inertia);
+
+    if (!this.isValidVersion()) {
+      return this.location(this.req.url);
     }
 
     this.res.setHeader(InertiaHeaders.Inertia, "true");
@@ -273,5 +299,18 @@ export class Inertia {
   async location(url: string) {
     this.res.setHeader(InertiaHeaders.Location, url);
     this.res.status(409);
+    this.res.end();
+  }
+
+  async redirect(url: string) {
+    const method = this.req.method;
+    if (
+      this.res.statusCode === 302 &&
+      ["PUT", "PATCH", "DELETE"].includes(method)
+    ) {
+      return this.res.redirect(303, url);
+    }
+    this.res.setHeader("Vary", InertiaHeaders.Inertia);
+    this.res.redirect(url);
   }
 }
