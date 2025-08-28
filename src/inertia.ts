@@ -302,15 +302,26 @@ export class Inertia {
     this.res.end();
   }
 
-  async redirect(url: string) {
+  redirect(statusOrUrl: number | string, maybeUrl?: string): void {
+    let status: number;
+    let url: string;
+
+    if (typeof statusOrUrl === "number" && maybeUrl) {
+      status = statusOrUrl;
+      url = maybeUrl;
+    } else if (typeof statusOrUrl === "string") {
+      status = 302; // default redirect status
+      url = statusOrUrl;
+    } else {
+      throw new Error("Invalid arguments for redirect");
+    }
+
     const method = this.req.method;
-    if (
-      this.res.statusCode === 302 &&
-      ["PUT", "PATCH", "DELETE"].includes(method)
-    ) {
+    if (status === 302 && ["PUT", "PATCH", "DELETE"].includes(method)) {
       return this.res.redirect(303, url);
     }
+
     this.res.setHeader("Vary", InertiaHeaders.Inertia);
-    this.res.redirect(url);
+    this.res.redirect(status, url);
   }
 }
