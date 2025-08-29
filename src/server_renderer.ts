@@ -4,7 +4,7 @@ import type {
   RenderInertiaSsrApp,
   ResolvedConfig,
 } from "./types.js";
-import { ViteDevServer } from "vite";
+import type { ViteDevServer } from "vite";
 
 export class ServerRenderer {
   constructor(
