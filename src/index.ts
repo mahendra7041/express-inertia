@@ -1,5 +1,5 @@
 import express, { RequestHandler } from "express";
-import { type ViteDevServer, createServer as createViteServer } from "vite";
+import type { ViteDevServer } from "vite";
 import type { BaseConfig, ResolvedConfig } from "./types";
 import { inertiaMiddleware } from "./inertia_middleware.js";
 import Flash from "./flash.js";
@@ -21,6 +21,8 @@ export default async function inertia(
   let vite: ViteDevServer | undefined;
   if (!isProduction) {
     try {
+      // ✅ dynamically import vite only in dev
+      const { createServer: createViteServer } = await import("vite");
       vite = await createViteServer(newConfig.vite);
       middlewares.push(vite.middlewares);
     } catch (error) {
