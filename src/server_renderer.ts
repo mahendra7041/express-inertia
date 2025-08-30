@@ -1,9 +1,5 @@
 import { pathToFileURL } from "node:url";
-import type {
-  PageObject,
-  RenderInertiaSsrApp,
-  ResolvedConfig,
-} from "./types.js";
+import type { PageObject, ResolvedConfig } from "./types.js";
 import type { ViteDevServer } from "vite";
 
 export class ServerRenderer {
@@ -15,7 +11,9 @@ export class ServerRenderer {
   async render(pageObject: PageObject) {
     let render: any;
 
-    if (this.vite) {
+    const isProduction = process.env.NODE_ENV === "production";
+
+    if (!isProduction && this.vite) {
       render = await this.vite.ssrLoadModule(this.config.ssrEntrypoint!);
     } else {
       render = await import(

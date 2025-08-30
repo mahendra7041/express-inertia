@@ -21,7 +21,6 @@ export default async function inertia(
   let vite: ViteDevServer | undefined;
   if (!isProduction) {
     try {
-      // ✅ dynamically import vite only in dev
       const { createServer: createViteServer } = await import("vite");
       vite = await createViteServer(newConfig.vite);
       middlewares.push(vite.middlewares);
