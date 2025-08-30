@@ -8,8 +8,9 @@ async function bootstrap() {
   const app = express();
   const PORT = process.env.PORT || 5000;
 
-  app.use(express.static("public", { index: false }));
-
+  if (process.env.NODE_ENV === "production") {
+    app.use(express.static("public", { index: false }));
+  }
   app.use(session(sessionConfig));
   app.use(await inertia(inertiaConfig));
 
