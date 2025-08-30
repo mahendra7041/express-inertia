@@ -1,19 +1,20 @@
 {
   "name": "express-inertia-vue",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "nodemon server.js",
-    "serve": "cross-env NODE_ENV=production node server.js",
-    "build": "npm run build:client && npm run build:ssr",
-    "build:client": "vite build --outDir build/client --ssrManifest",
-    "build:ssr": "vite build --outDir build/ssr --ssr src/ssr.js"
+    "start": "cross-env NODE_ENV=production node server.js",
+    "build": "npm run build:ssr && npm run build:client",
+    "build:client": "vite build --outDir public",
+    "build:ssr": "vite build --outDir ssr --ssr src/ssr.js"
   },
   "dependencies": {
     "@inertiajs/vue3": "^2.1.2",
     "express": "^5.1.0",
-    "express-inertia": "github:mahendra7041/express-inertia",
+    "express-inertia": "^1.3.1",
+    "express-session": "^1.18.2",
     "vue": "^3.5.18"
   },
   "devDependencies": {
