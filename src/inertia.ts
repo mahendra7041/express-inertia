@@ -158,7 +158,7 @@ export class Inertia {
     return {
       component,
       url: this.req.url,
-      version: 1,
+      version: this.config.assetsVersion,
       props: await this.resolvePageProps(propsToResolve),
       clearHistory: this.shouldClearHistory,
       encryptHistory: this.shouldEncryptHistory,
