@@ -2,7 +2,6 @@ import { ServerRenderer } from "./server_renderer.js";
 import type {
   BaseConfig,
   Data,
-  MaybePromise,
   PageObject,
   PageProps,
   ResolvedConfig,
@@ -13,8 +12,6 @@ import {
   DeferProp,
   ignoreFirstLoadSymbol,
   MergeableProp,
-  MergeProp,
-  OptionalProp,
 } from "./props.js";
 import { InertiaHeaders } from "./headers.js";
 import path from "path";
@@ -101,29 +98,16 @@ export class Inertia {
     return newProps;
   }
 
-  private async resolveProp(key: string, value: any) {
-    if (
-      value instanceof OptionalProp ||
-      value instanceof MergeProp ||
-      value instanceof DeferProp ||
-      value instanceof AlwaysProp
-    ) {
-      return [key, await value.callback()];
-    }
-
-    return [key, value];
-  }
-
   async resolvePageProps(props: PageProps = {}) {
     return Object.fromEntries(
       await Promise.all(
         Object.entries(props).map(async ([key, value]) => {
           if (typeof value === "function") {
             const result = await value(this.req, this.res);
-            return this.resolveProp(key, result);
+            return [key, result];
           }
 
-          return this.resolveProp(key, value);
+          return [key, value];
         })
       )
     );
@@ -235,10 +219,9 @@ export class Inertia {
   }
 
   private isValidVersion() {
-    const version = "1";
     if (
       this.req.method === "GET" &&
-      this.req.get(InertiaHeaders.Version) !== version
+      this.req.get(InertiaHeaders.Version) !== this.config.assetsVersion
     ) {
       return false;
     }
@@ -276,26 +259,6 @@ export class Inertia {
     this.shouldEncryptHistory = encrypt;
   }
 
-  lazy<T>(callback: () => MaybePromise<T>) {
-    return new OptionalProp(callback);
-  }
-
-  optional<T>(callback: () => MaybePromise<T>) {
-    return new OptionalProp(callback);
-  }
-
-  merge<T>(callback: () => MaybePromise<T>) {
-    return new MergeProp(callback);
-  }
-
-  always<T>(callback: () => MaybePromise<T>) {
-    return new AlwaysProp(callback);
-  }
-
-  defer<T>(callback: () => MaybePromise<T>, group = "default") {
-    return new DeferProp(callback, group);
-  }
-
   async location(url: string) {
     this.res.setHeader(InertiaHeaders.Location, url);
     this.res.status(409);
@@ -310,7 +273,7 @@ export class Inertia {
       status = statusOrUrl;
       url = maybeUrl;
     } else if (typeof statusOrUrl === "string") {
-      status = 302; // default redirect status
+      status = 302;
       url = statusOrUrl;
     } else {
       throw new Error("Invalid arguments for redirect");

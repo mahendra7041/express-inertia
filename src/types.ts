@@ -16,6 +16,7 @@ export type SharedDatumFactory = (
 export type SharedData = Record<string, Data | SharedDatumFactory>;
 export interface BaseConfig {
   rootElementId?: string;
+  assetsVersion?: string;
   encryptHistory?: boolean;
   indexEntrypoint?: string;
   indexBuildEntrypoint?: string;
