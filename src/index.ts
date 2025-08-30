@@ -1,4 +1,4 @@
-import express, { RequestHandler } from "express";
+import type { RequestHandler } from "express";
 import type { ViteDevServer } from "vite";
 import type { BaseConfig, ResolvedConfig } from "./types";
 import { inertiaMiddleware } from "./inertia_middleware.js";
@@ -28,12 +28,6 @@ export default async function inertia(
       console.error("Vite server initialization failed:", error);
       throw error;
     }
-  } else {
-    middlewares.push(
-      express.static(newConfig.clientStaticBuildDir, {
-        index: false,
-      })
-    );
   }
 
   middlewares.push(Flash.middleware);

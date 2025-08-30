@@ -17,7 +17,6 @@ export type SharedData = Record<string, Data | SharedDatumFactory>;
 export interface BaseConfig {
   rootElementId?: string;
   encryptHistory?: boolean;
-  clientStaticBuildDir?: string;
   indexEntrypoint?: string;
   indexBuildEntrypoint?: string;
   vite?: InlineConfig | ViteResolveConfig;

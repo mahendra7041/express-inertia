@@ -21,7 +21,6 @@ import path from "path";
 import { readFile } from "fs/promises";
 import type { Request, Response } from "express";
 import type { ViteDevServer } from "vite";
-
 export class Inertia {
   private sharedData: SharedData = {};
   private serverRenderer: ServerRenderer;
@@ -39,6 +38,7 @@ export class Inertia {
     this.serverRenderer = new ServerRenderer(config, this.vite);
     this.shouldClearHistory = false;
     this.shouldEncryptHistory = config.encryptHistory || true;
+
     this.sharedData = {
       errors: (req: Request) => req.flash.get("errors") || {},
       flash: (req: Request) => {
