@@ -6,13 +6,8 @@ createInertiaApp({
   id: "root",
   resolve: (name) => {
     const pages = import.meta.glob("./pages/**/*.jsx", { eager: true });
-    const page = pages[`./pages/${name}.jsx`];
 
-    if (!page) {
-      throw new Error(`Page not found: ${name}`);
-    }
-
-    return page;
+    return pages[`./pages/${name}.jsx`];
   },
   setup({ el, App, props }) {
     createRoot(el).render(<App {...props} />);

@@ -7,8 +7,8 @@
     "dev": "nodemon server.js",
     "start": "cross-env NODE_ENV=production node server.js",
     "build": "npm run build:ssr && npm run build:client",
-    "build:client": "vite build --outDir public",
-    "build:ssr": "vite build --outDir ssr --ssr src/ssr.jsx",
+    "build:client": "vite build --outDir build/client",
+    "build:ssr": "vite build --outDir build/ssr --ssr src/ssr.jsx",
     "lint": "eslint ./src"
   },
   "dependencies": {

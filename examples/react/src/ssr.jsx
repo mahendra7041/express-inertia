@@ -9,13 +9,7 @@ export default function render(page) {
     render: ReactDOMServer.renderToString,
     resolve: (name) => {
       const pages = import.meta.glob("./pages/**/*.jsx", { eager: true });
-      const page = pages[`./pages/${name}.jsx`];
-
-      if (!page) {
-        throw new Error(`Page not found: ${name}`);
-      }
-
-      return page;
+      return pages[`./pages/${name}.jsx`];
     },
     setup: ({ App, props }) => <App {...props} />,
   });
