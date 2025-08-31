@@ -6,7 +6,7 @@ const defaultConfig: ResolvedConfig = {
   assetsVersion: "v1",
   encryptHistory: true,
   indexEntrypoint: path.resolve(process.cwd(), "index.html"),
-  indexBuildEntrypoint: path.resolve(process.cwd(), "public/index.html"),
+  indexBuildEntrypoint: path.resolve(process.cwd(), "build/client/index.html"),
   ssrEnabled: false,
   vite: {
     server: { middlewareMode: true },
