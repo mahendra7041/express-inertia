@@ -3,7 +3,12 @@
 [![npm version](https://img.shields.io/npm/v/express-inertia)](https://www.npmjs.com/package/express-inertia)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A lightweight Express.js adapter for [Inertia.js](https://inertiajs.com/) that enables you to build modern, single-page applications with server-side routing and client-side rendering. Seamlessly integrate React, Vue, or Svelte components while maintaining the simplicity of traditional server-rendered applications.
+A lightweight Express.js middleware/adapter for [Inertia.js](https://inertiajs.com/) that lets you build modern single-page applications with server-side rendering. It allows seamless integration of React, Vue, or Svelte components while preserving the simplicity of classic apps.
+
+## Demo
+
+Check out a live demo of express-inertia in action:
+[Pingcrm](https://github.com/mahendra7041/pingcrm-react-inertia)
 
 ## Features
 
@@ -47,8 +52,10 @@ First, create a new project using Vite with your preferred framework:
 ```bash
 # For React (used in this guide)
 npm create vite@latest my-inertia-app -- --template react
+
 # For Vue
 npm create vite@latest my-inertia-app -- --template vue
+
 # For Svelte
 npm create vite@latest my-inertia-app -- --template svelte
 
@@ -61,13 +68,13 @@ Install the necessary dependencies for Express and Inertia:
 
 ```bash
 # For React (used in this guide)
-npm install express-inertia express @inertiajs/react
+npm install express-inertia express express-session @inertiajs/react
 
 # For Vue
-npm install express-inertia express @inertiajs/vue3
+npm install express-inertia express express-session @inertiajs/vue3
 
 # For Svelte
-npm install express-inertia express @inertiajs/svelte
+npm install express-inertia express express-session @inertiajs/svelte
 
 # Additional dev dependencies
 npm install -D nodemon
@@ -96,52 +103,48 @@ my-inertia-app/
 
 ```javascript
 import express from "express";
-import { inertiaMiddleware } from "express-inertia";
-import { createServer } from "vite";
+import session from "express-session";
+import inertia from "express-inertia";
 
 async function bootstrap() {
   const app = express();
-  const PORT = process.env.PORT || 5000;
-  let vite;
+  const PORT = process.env.PORT || 3000;
 
+  // Serve static assets (only in production)
   if (process.env.NODE_ENV === "production") {
-    app.use(
-      express.static("build/client", {
-        index: false,
-      })
-    );
-  } else {
-    vite = await createServer({
-      server: { middlewareMode: true },
-      appType: "custom",
-    });
-
-    app.use(vite.middlewares);
+    app.use(express.static("build/client", { index: false }));
   }
 
-  app.use(express.static("public"));
+  // Session middleware (required for flash messages)
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || "secret",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: process.env.NODE_ENV === "production",
+      },
+    })
+  );
 
-  const config = {
-    rootElementId: "root",
-    encryptHistory: true,
-    client: {
-      entrypoint: "index.html",
-      bundle: "build/client/index.html",
-    },
-    ssr: {
-      entrypoint: "src/ssr.js",
-      bundle: "build/ssr/ssr.js",
-    },
-  };
+  // Inertia middleware setup
+  app.use(
+    await inertia({
+      rootElementId: "root", // DOM element ID for Inertia app (default: app)
+      assetsVersion: "v1", // change to bust client-side cache
+      ssrEnabled: true, // enable SSR
+      ssrEntrypoint: "src/ssr.jsx", // entry file for SSR in dev
+      ssrBuildEntrypoint: "build/ssr/ssr.js", // built SSR file for production
+    })
+  );
 
-  app.use(inertiaMiddleware(config, vite));
-
+  // Example route
   app.get("/", (req, res) => {
     res.inertia.render("home");
   });
 
   app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Server is running at http://localhost:${PORT}`);
   });
 }
 
@@ -154,9 +157,9 @@ bootstrap().catch(console.error);
 {
   "scripts": {
     "dev": "nodemon server.js",
-    "serve": "NODE_ENV=production node server.js",
-    "build": "npm run build:client && npm run build:ssr",
-    "build:client": "vite build --outDir build/client --ssrManifest",
+    "start": "cross-env NODE_ENV=production node server.js",
+    "build": "npm run build:ssr && npm run build:client",
+    "build:client": "vite build --outDir build/client",
     "build:ssr": "vite build --outDir build/ssr --ssr src/ssr.jsx"
   }
 }
@@ -174,13 +177,8 @@ createInertiaApp({
   id: "root",
   resolve: (name) => {
     const pages = import.meta.glob("./pages/**/*.jsx", { eager: true });
-    const page = pages[`./pages/${name}.jsx`];
 
-    if (!page) {
-      throw new Error(`Page not found: ${name}`);
-    }
-
-    return page;
+    return pages[`./pages/${name}.jsx`];
   },
   setup({ el, App, props }) {
     createRoot(el).render(<App {...props} />);
@@ -203,13 +201,8 @@ export default function render(page) {
     render: ReactDOMServer.renderToString,
     resolve: (name) => {
       const pages = import.meta.glob("./pages/**/*.jsx", { eager: true });
-      const page = pages[`./pages/${name}.jsx`];
 
-      if (!page) {
-        throw new Error(`Page not found: ${name}`);
-      }
-
-      return page;
+      return pages[`./pages/${name}.jsx`];
     },
     setup: ({ App, props }) => <App {...props} />,
   });
@@ -220,24 +213,26 @@ export default function render(page) {
 
 ### Middleware Options
 
-| Option              | Type      | Default      | Description                                     |
-| ------------------- | --------- | ------------ | ----------------------------------------------- |
-| `rootElementId`     | `string`  | `app`        | DOM element ID where the Inertia app mounts     |
-| `encryptHistory`    | `boolean` | `true`       | Encrypts the Inertia history state for security |
-| `client.entrypoint` | `string`  | **Required** | Path to your HTML template                      |
-| `client.bundle`     | `string`  | **Required** | Path to the built client-side bundle            |
-| `ssr.entrypoint`    | `string`  | Optional     | Path to your SSR entry point                    |
-| `ssr.bundle`        | `string`  | Optional     | Path to the built SSR bundle                    |
-| `sharedData`        | `object`  | `{}`         | Data/functions to share with all pages          |
+| Option                 | Type                 | Default                                                   | Description                                                   |
+| ---------------------- | -------------------- | --------------------------------------------------------- | ------------------------------------------------------------- |
+| `rootElementId`        | `string?`            | `"app"`                                                   | DOM element ID where the Inertia app mounts                   |
+| `assetsVersion`        | `string?`            | `"v1"`                                                    | Version string used for inertia                               |
+| `encryptHistory`       | `boolean?`           | `true`                                                    | Encrypts the Inertia history state for security               |
+| `indexEntrypoint`      | `string?`            | `"index.html"`                                            | Path to your base HTML template (used in dev mode)            |
+| `indexBuildEntrypoint` | `string?`            | `"build/client/index.html"`                               | Path to the built client HTML entrypoint (used in production) |
+| `ssrEnabled`           | `boolean?`           | `false`                                                   | Enables/disables server-side rendering (SSR)                  |
+| `ssrEntrypoint`        | `string?`            | Required if `ssrEnabled: true`                            | Path to your SSR entry file (used in development)             |
+| `ssrBuildEntrypoint`   | `string?`            | Required if `ssrEnabled: true`                            | Path to the built SSR bundle (used in production)             |
+| `vite`                 | `ViteResolveConfig?` | `{ server: { middlewareMode: true }, appType: "custom" }` | Passes custom options to the Vite dev server                  |
 
 ## API Reference
 
-### `inertiaMiddleware(config, vite?)`
+### `inertia(config?, vite?)`
 
 Initializes and returns the Express middleware.
 
 ```javascript
-app.use(inertiaMiddleware(config, viteDevServer));
+app.use(await inertia(config));
 ```
 
 ### `res.inertia.render(component, props?)`
@@ -246,8 +241,10 @@ Renders an Inertia page component.
 
 ```javascript
 app.get('/users', (req, res) => {
-  res.inertia.render('Users', {
-    users: await User.findAll(),
+  const users = await User.findAll();
+
+  res.inertia.render('user/index', {
+    users: users,
     page: req.query.page || 1
   });
 });
@@ -269,6 +266,20 @@ app.use((req, res, next) => {
 });
 ```
 
+### `res.inertia.redirect(urlOrStatus, url?)`
+
+Redirects the user to a different location while preserving Inertia’s client-side navigation.
+
+```javascript
+app.get("/home", (req, res) => {
+  // Redirect with default status (302 Found)
+  res.inertia.redirect("/dashboard");
+
+  // Redirect with explicit status
+  res.inertia.redirect(301, "/new-home");
+});
+```
+
 ## Examples
 
 ### Shared Data Example
@@ -280,10 +291,6 @@ app.use((req, res, next) => {
     auth: {
       user: req.user,
       isAdmin: req.user?.role === "admin",
-    },
-    flash: {
-      success: req.flash("success"),
-      error: req.flash("error"),
     },
   });
   next();
@@ -305,22 +312,52 @@ app.post("/contact", async (req, res) => {
 });
 ```
 
-## 🤝 Contributing
+Here’s an updated **Contributing section** with a clear note about discussing **breaking changes** before implementation:
+
+---
+
+## Contributing
 
 We welcome contributions! Please feel free to submit issues, feature requests, or pull requests.
 
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feat/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feat/amazing-feature`
-5. Open a Pull Request
+### Guidelines
 
-## 📄 License
+1. **Fork** the repository
+2. **Create** your feature branch:
+
+   ```bash
+   git checkout -b feat/amazing-feature
+   ```
+
+3. **Commit** your changes with a descriptive message:
+
+   ```bash
+   git commit -m "feat: add amazing feature"
+   ```
+
+4. **Push** to your branch:
+
+   ```bash
+   git push origin feat/amazing-feature
+   ```
+
+5. **Open a Pull Request**
+
+### Breaking Changes
+
+If your contribution introduces a **breaking change** (e.g. changes to configuration options, API methods, or default behavior), please **open an issue or discussion first** before submitting a PR. This ensures we can:
+
+- Discuss the impact on existing users
+- Decide if a major version bump is required
+- Provide a clear migration path in the documentation
+
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](https://opensource.org/licenses/MIT) file for details.
 
-## 🔗 Resources
+## Resources
 
 - [Inertia.js Documentation](https://inertiajs.com/)
+- [React.js Documentation](https://react.dev/)
 - [Express.js Documentation](https://expressjs.com/)
 - [Vite Documentation](https://vitejs.dev/)
