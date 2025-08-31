@@ -1,5 +1,21 @@
-# Vue 3 + Vite
+# Express-Inertia (with Vue)
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+A starter template for building modern single-page applications using **express-inertia** with **react**, pre-configured with **vite** and server-side rendering (SSR) support.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## Quick Start
+
+Create a new project using the template
+
+```bash
+npx degit mahendra7041/express-inertia/examples/vue my-inertia-app
+
+cd my-inertia-app
+npm install
+npm run dev
+```
+
+Open your browser at `http://localhost:5000` to see the app running.
+
+## License
+
+MIT © 2025 Mahendra Chavda

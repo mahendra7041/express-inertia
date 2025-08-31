@@ -1,12 +1,21 @@
-# React + Vite
+# Express-Inertia (with React)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A starter template for building modern single-page applications using **express-inertia** with **react**, pre-configured with **vite** and server-side rendering (SSR) support.
 
-Currently, two official plugins are available:
+## Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Create a new project using the template
 
-## Expanding the ESLint configuration
+```bash
+npx degit mahendra7041/express-inertia/examples/react my-inertia-app
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+cd my-inertia-app
+npm install
+npm run dev
+```
+
+Open your browser at `http://localhost:5000` to see the app running.
+
+## License
+
+MIT © 2025 Mahendra Chavda
