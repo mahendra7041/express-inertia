@@ -2,6 +2,7 @@ import { ServerRenderer } from "./server_renderer.js";
 import type {
   BaseConfig,
   Data,
+  MaybePromise,
   PageObject,
   PageProps,
   ResolvedConfig,
@@ -12,6 +13,8 @@ import {
   DeferProp,
   ignoreFirstLoadSymbol,
   MergeableProp,
+  MergeProp,
+  OptionalProp,
 } from "./props.js";
 import { InertiaHeaders } from "./headers.js";
 import path from "path";
@@ -286,5 +289,25 @@ export class Inertia {
 
     this.res.setHeader("Vary", InertiaHeaders.Inertia);
     this.res.redirect(status, url);
+  }
+
+  lazy<T>(callback: () => MaybePromise<T>) {
+    return new OptionalProp(callback);
+  }
+
+  optional<T>(callback: () => MaybePromise<T>) {
+    return new OptionalProp(callback);
+  }
+
+  merge<T>(callback: () => MaybePromise<T>) {
+    return new MergeProp(callback);
+  }
+
+  always<T>(callback: () => MaybePromise<T>) {
+    return new AlwaysProp(callback);
+  }
+
+  defer<T>(callback: () => MaybePromise<T>, group = "default") {
+    return new DeferProp(callback, group);
   }
 }
