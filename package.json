@@ -27,10 +27,10 @@
     "type": "git",
     "url": "git+https://github.com/mahendra7041/express-inertia.git"
   },
-  "dependencies": {
-    "node-inertiajs": "github:mahendra7041/node-inertiajs"
-  },
   "peerDependencies": {
     "vite": "^7.1.4"
+  },
+  "dependencies": {
+    "node-inertiajs": "^1.0.2"
   }
 }
