@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { Inertia, ResolvedConfig } from "node-inertiajs";
+import { Inertia, type ResolvedConfig } from "node-inertiajs";
 import type { ViteDevServer } from "vite";
 
 export function inertiaMiddleware(

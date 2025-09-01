@@ -1,7 +1,7 @@
 import type { RequestHandler, Request } from "express";
 import { defineConfig, Flash, InertiaConfig } from "node-inertiajs";
 import type { ViteDevServer } from "vite";
-import { inertiaMiddleware } from "./inertia_middleware";
+import { inertiaMiddleware } from "./inertia_middleware.js";
 
 export default async function inertia(
   config?: InertiaConfig
@@ -11,9 +11,8 @@ export default async function inertia(
   const resolvedConfig = defineConfig(config || ({} as InertiaConfig));
 
   resolvedConfig.sharedData = {
-    errors: ({ request }: { request: Request }) =>
-      request.flash.get("errors") || {},
-    flash: ({ request }: { request: Request }) => {
+    errors: (request: Request) => request.flash.get("errors") || {},
+    flash: (request: Request) => {
       return {
         error: request.flash.get("error") || null,
         success: request.flash.get("success") || null,
