@@ -1,20 +1,26 @@
-import type { RequestHandler } from "express";
+import type { RequestHandler, Request } from "express";
+import { defineConfig, Flash, InertiaConfig } from "node-inertiajs";
 import type { ViteDevServer } from "vite";
-import type { BaseConfig, ResolvedConfig } from "./types";
-import { inertiaMiddleware } from "./inertia_middleware.js";
-import Flash from "./flash.js";
-import defaults from "defaults";
-import defaultConfig from "./default_config.js";
+import { inertiaMiddleware } from "./inertia_middleware";
 
 export default async function inertia(
-  config?: BaseConfig
+  config?: InertiaConfig
 ): Promise<RequestHandler[]> {
   const isProduction = process.env.NODE_ENV === "production";
 
-  const newConfig = defaults<Partial<ResolvedConfig>, ResolvedConfig>(
-    config ?? {},
-    defaultConfig
-  ) as Required<ResolvedConfig>;
+  const resolvedConfig = defineConfig(config || ({} as InertiaConfig));
+
+  resolvedConfig.sharedData = {
+    errors: ({ request }: { request: Request }) =>
+      request.flash.get("errors") || {},
+    flash: ({ request }: { request: Request }) => {
+      return {
+        error: request.flash.get("error") || null,
+        success: request.flash.get("success") || null,
+      };
+    },
+    ...resolvedConfig.sharedData,
+  };
 
   const middlewares: RequestHandler[] = [];
 
@@ -22,7 +28,7 @@ export default async function inertia(
   if (!isProduction) {
     try {
       const { createServer: createViteServer } = await import("vite");
-      vite = await createViteServer(newConfig.vite);
+      vite = await createViteServer(resolvedConfig.vite);
       middlewares.push(vite.middlewares);
     } catch (error) {
       console.error("Vite server initialization failed:", error);
@@ -31,7 +37,7 @@ export default async function inertia(
   }
 
   middlewares.push(Flash.middleware);
-  middlewares.push(inertiaMiddleware(newConfig, vite));
+  middlewares.push(inertiaMiddleware(resolvedConfig, vite));
 
   return middlewares;
 }
