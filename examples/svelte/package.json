@@ -19,7 +19,7 @@
   "dependencies": {
     "@inertiajs/svelte": "^2.1.2",
     "express": "^5.1.0",
-    "express-inertia": "^1.4.0",
+    "express-inertia": "^1.6.1",
     "express-session": "^1.18.2"
   }
 }
