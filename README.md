@@ -259,7 +259,7 @@ app.use((req, res, next) => {
   res.inertia.share({
     auth: {
       user: req.user,
-      can: (permission) => req.user?.permissions?.includes(permission),
+      permissions: req.user?.permissions,
     },
   });
   next();
