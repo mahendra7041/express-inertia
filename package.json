@@ -13,8 +13,10 @@
   ],
   "keywords": [
     "express",
-    "inertia",
-    "middleware"
+    "inertiajs",
+    "inertiajs-adapter",
+    "inertiajs-middleware",
+    "express-inertiajs-adapter"
   ],
   "author": "Mahendra Chavda",
   "license": "MIT",
