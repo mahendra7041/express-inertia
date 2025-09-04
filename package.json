@@ -33,6 +33,6 @@
     "vite": "^7.1.4"
   },
   "dependencies": {
-    "node-inertiajs": "^1.0.4"
+    "node-inertiajs": "^1.1.0"
   }
 }
