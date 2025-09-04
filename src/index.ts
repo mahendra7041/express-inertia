@@ -3,6 +3,8 @@ import { defineConfig, Flash, InertiaConfig } from "node-inertiajs";
 import type { ViteDevServer } from "vite";
 import { inertiaMiddleware } from "./inertia_middleware.js";
 
+export * from "node-inertiajs";
+
 export default async function inertia(
   config?: InertiaConfig
 ): Promise<RequestHandler[]> {

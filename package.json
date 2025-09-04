@@ -3,6 +3,7 @@
   "version": "1.6.5",
   "description": "A lightweight Express.js middleware/adapter for Inertia.js that lets you build modern single-page applications with server-side rendering.",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
     "build": "npx tsc",
