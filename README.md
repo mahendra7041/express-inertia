@@ -99,7 +99,27 @@ my-inertia-app/
 └── package.json
 ```
 
-### Step 4: Express Server Setup (`server.js`)
+### Step 4: Update HTML Template (`index.html`)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- @inertiaHead -->
+  </head>
+  <body
+    class="bg-neutral-50 text-black selection:bg-teal-300 dark:bg-neutral-900 dark:text-white dark:selection:bg-pink-500 dark:selection:text-white"
+  >
+    <!-- @inertia -->
+    <script type="module" src="/src/main.Jsx"></script>
+  </body>
+</html>
+```
+
+### Step 5: Express Server Setup (`server.js`)
 
 ```javascript
 import express from "express";
@@ -151,7 +171,7 @@ async function bootstrap() {
 bootstrap().catch(console.error);
 ```
 
-### Step 5: Update Package.json Scripts
+### Step 6: Update Package.json Scripts
 
 ```json
 {
@@ -165,7 +185,7 @@ bootstrap().catch(console.error);
 }
 ```
 
-### Step 6: Client Entry Point (src/main.jsx)
+### Step 7: Client Entry Point (src/main.jsx)
 
 Update your framework's main entry point accordingly. For more details, visit [Inertia.js Client-Side Setup](https://inertiajs.com/client-side-setup#initialize-the-inertia-app):
 
@@ -186,7 +206,7 @@ createInertiaApp({
 });
 ```
 
-### Step 7: SSR Entry Point (src/ssr.jsx) - Optional
+### Step 8: SSR Entry Point (src/ssr.jsx) - Optional
 
 Add Server-Side Rendering support for improved SEO and performance.
 
