@@ -2,16 +2,6 @@
   "name": "express-inertia",
   "version": "1.6.8",
   "description": "A lightweight Express.js middleware/adapter for Inertia.js that lets you build modern single-page applications with server-side rendering.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "type": "module",
-  "scripts": {
-    "build": "npx tsc",
-    "prepare": "npm run build"
-  },
-  "files": [
-    "dist"
-  ],
   "keywords": [
     "express",
     "inertiajs",
@@ -19,21 +9,31 @@
     "inertiajs-middleware",
     "express-inertiajs-adapter"
   ],
-  "author": "Mahendra Chavda",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mahendra7041/express-inertia.git"
+  },
   "license": "MIT",
+  "author": "Mahendra Chavda",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npx tsc",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "node-inertiajs": "file:../node-inertiajs"
+  },
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/express-session": "^1.18.2",
     "typescript": "^5.9.2"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mahendra7041/express-inertia.git"
-  },
   "peerDependencies": {
     "vite": "^7.1.4"
-  },
-  "dependencies": {
-    "node-inertiajs": "^1.1.2"
   }
 }
