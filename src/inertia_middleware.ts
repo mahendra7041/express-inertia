@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { Inertia, type ResolvedConfig } from "node-inertiajs";
 import type { ViteDevServer } from "vite";
-import { ExpressAdapter } from "./express_adapter";
+import { ExpressAdapter } from "./express_adapter.js";
 
 export function inertiaMiddleware(
   config: ResolvedConfig,
