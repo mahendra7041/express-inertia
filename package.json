@@ -25,9 +25,6 @@
     "build": "npx tsc",
     "prepare": "npm run build"
   },
-  "dependencies": {
-    "node-inertiajs": "github:mahendra7041/node-inertiajs#dev"
-  },
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/express-session": "^1.18.2",
@@ -35,5 +32,8 @@
   },
   "peerDependencies": {
     "vite": "^7.1.4"
+  },
+  "dependencies": {
+    "node-inertiajs": "^2.0.0"
   }
 }
