@@ -4,6 +4,7 @@ import type { ViteDevServer } from "vite";
 import { inertiaMiddleware } from "./inertia_middleware.js";
 
 export * from "node-inertiajs";
+export { ExpressAdapter } from "./express_adapter.js";
 
 export default async function inertia(
   config?: InertiaConfig
@@ -29,7 +30,7 @@ export default async function inertia(
   if (!isProduction) {
     try {
       const { createServer: createViteServer } = await import("vite");
-      vite = await createViteServer(resolvedConfig.vite);
+      vite = await createViteServer(resolvedConfig.vite as any);
       middlewares.push(vite.middlewares);
     } catch (error) {
       console.error("Vite server initialization failed:", error);
