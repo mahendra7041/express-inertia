@@ -1,6 +1,6 @@
 {
   "name": "express-inertia",
-  "version": "1.6.8",
+  "version": "2.0.0",
   "description": "A lightweight Express.js middleware/adapter for Inertia.js that lets you build modern single-page applications with server-side rendering.",
   "keywords": [
     "express",
