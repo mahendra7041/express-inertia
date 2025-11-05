@@ -9,7 +9,7 @@ export function inertiaMiddleware(
 ) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const adapter = new ExpressAdapter(req, res);
-    res.inertia = new Inertia(adapter, config, vite as any);
+    res.inertia = new Inertia(adapter, config, vite);
     next();
   };
 }

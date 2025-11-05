@@ -1,65 +1,60 @@
 import type { Request, Response } from "express";
 import { Adapter } from "node-inertiajs";
-
-/**
- * Express Adapter for Inertia.js
- */
 export class ExpressAdapter extends Adapter {
-  constructor(protected request: Request, protected response: Response) {
+  constructor(protected req: Request, protected res: Response) {
     super();
   }
 
-  getRequest(): Request {
-    return this.request;
+  get url(): string {
+    return this.req.url || "/";
   }
 
-  getResponse(): Response {
-    return this.response;
+  get method(): string {
+    return this.req.method;
+  }
+
+  get statusCode(): number {
+    return this.res.statusCode;
+  }
+
+  set statusCode(code: number) {
+    this.res.status(code);
+  }
+
+  get request(): Request {
+    return this.req;
+  }
+
+  get response(): Response {
+    return this.res;
   }
 
   getHeader(name: string): string | string[] | undefined {
-    return this.request.headers[name.toLowerCase()];
+    return this.req.get(name) || undefined;
   }
 
-  setHeader(name: string, value: any): void {
-    this.response.setHeader(name, value);
+  setHeader(name: string, value: string): void {
+    this.res.setHeader(name, value);
   }
 
-  getMethod(): string {
-    return this.request.method || "GET";
+  send(content: string): void {
+    if (!this.res.getHeader("Content-Type")) {
+      this.res.setHeader("Content-Type", "text/html");
+    }
+    this.res.send(content);
   }
 
-  getUrl(): string {
-    return this.request.url || "/";
-  }
-
-  json(data: Record<string, any>): void {
-    this.response.json(data);
-  }
-
-  html(content: string): void {
-    this.response.send(content);
+  json(data: unknown): void {
+    this.res.json(data);
   }
 
   redirect(statusOrUrl: number | string, url?: string): void {
-    let status = 302;
-    let location = "";
-
     if (typeof statusOrUrl === "number" && typeof url === "string") {
-      status = statusOrUrl;
-      location = url;
+      this.res.redirect(statusOrUrl, url);
     } else if (typeof statusOrUrl === "string") {
-      location = statusOrUrl;
+      this.res.redirect(statusOrUrl);
+    } else {
+      throw new Error("Invalid redirect arguments");
     }
-
-    this.response.redirect(status, location);
-  }
-
-  setStatus(code: number): void {
-    this.response.status(code);
-  }
-
-  end(data?: any): void {
-    this.response.end(data);
   }
 }

@@ -26,7 +26,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "node-inertiajs": "github:alex-j-b/node-inertiajs#feat/adapter-pattern"
+    "node-inertiajs": "github:mahendra7041/node-inertiajs#dev"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
